@@ -1,6 +1,51 @@
 #include <stdio.h>
 #include <string.h>
 #include <_stdlib.h>
+#include <unistd.h>
+
+// function declarations for the extent of builtin shell commands
+int osh_cd(char **args);
+int osh_help(char **args);
+int osh_exit(char ** args);
+
+// clean mapping with a pseudo jump table
+char *builtin_str[] = {"cd", "help", "exit"};
+int (*builtin_func[])(char **) = {&osh_cd, &osh_help, &osh_exit};
+
+int osh_num_builtins() {
+    return sizeof(builtin_str) / sizeof(char *);
+}
+
+// implementations
+
+int osh_cd(char **args) {
+    if (args[1] == NULL) {
+        printf("osh: missing argument to cd\n");
+    } else {
+        if (chdir(args[1]) != 0) {
+            perror("osh: cd failed");
+        }
+    }
+    return 1;
+}
+
+int osh_help(char **args) {
+    int i;
+    printf("Owen Hochwald 's Cool Little Shell\n");
+    printf("Type program names and arguments, and hit enter.\n");
+    printf("The following are built in:\n");
+    for (i = 0; i < osh_num_builtins(); i++) {
+        printf("%s\n", builtin_str[i]);
+    }
+
+    printf("Use the man command for information on other programs.\n");
+    return 1;
+}
+
+int osh_exit(char ** args) {
+    return 0;
+}
+
 
 // read in a block, realloc more size if needed
 #define BUFFER_SIZE 1024
@@ -91,6 +136,31 @@ char ** osh_split_line(char * line) {
 
     tokens[position] = NULL;
     return tokens;
+}
+
+int osh_launch(char **args) {
+    pid_t pid;
+    pid_t wpid;
+    int status;
+
+    pid = fork();
+    if (pid == 0) {
+        // execute the command on the child process
+        if (execvp(args[0], args) == -1) {
+            perror("Error executing command");
+        }
+        exit(EXIT_FAILURE);
+    }
+    if (pid < 0) {
+        perror("Error forking");
+    } else {
+        // join with parent
+        do {
+            // parent waits for the command to finish
+            waitpid(pid, &status, WUNTRACED);
+        } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+    }
+    return 1;
 }
 
 int osh_execute(char ** args);

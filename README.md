@@ -2,7 +2,7 @@
 
 ---
 
-LSH is a simple implementation of a shell in C. It demonstrates the basics of how a shell works. That is: read, parse, fork, exec, and wait.
+OSH is a simple implementation of a shell in C. It demonstrates the basics of how a shell works. That is: read, parse, fork, exec, and wait.
 
 ## For Now: 
 - Commands must be on a single line.
