@@ -49,7 +49,7 @@ int osh_exit(char ** args) {
 
 // read in a block, realloc more size if needed
 #define BUFFER_SIZE 1024
-char * osh_read_line(void) {
+char * read_line(void) {
     int buffer_size = BUFFER_SIZE;
     int position = 0;
     char *buffer = (char*) malloc(sizeof(char) * buffer_size);
@@ -85,7 +85,7 @@ char * osh_read_line(void) {
     }
 }
 
-char *read_line(void) {
+char *osh_read_line(void) {
     char *line = NULL;
     size_t buffsize = 0; // getline will make buffer for us
 
@@ -163,7 +163,21 @@ int osh_launch(char **args) {
     return 1;
 }
 
-int osh_execute(char ** args);
+int osh_execute(char ** args) {
+ int i;
+
+    if (args[0] == NULL) {
+        // we don't have to do anything
+        return 1;
+    }
+
+    for (i = 0; i < osh_num_builtins(); i++) {
+        if (strcmp(args[0], builtin_str[i]) == 0) {
+            return (*builtin_func[i])(args);
+        }
+    }
+    return osh_launch(args);
+}
 
 // Read commands, parse into program, execute commands
 void osh_loop(void) {

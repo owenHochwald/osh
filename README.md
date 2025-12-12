@@ -14,4 +14,4 @@ OSH is a simple implementation of a shell in C. It demonstrates the basics of ho
 # Running
 ---- 
 
-Use `gcc -o osh src/main.c` to compile, and then `./lsh` to run.
+Use `gcc std=c23 -o osh src/main.c` to compile, and then `./osh` to run.
